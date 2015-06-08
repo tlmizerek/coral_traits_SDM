@@ -174,42 +174,49 @@ model.datasp <- model.data[ which((model.data$species=='Seriatopora hystrix') |
 #species, p/a, all envt vars
 model.covs <- data.frame(present=model.datasp$present,
                          species=model.datasp$species, 
-                         MODSSTraw=model.datasp$MODIS_SST,
-                         MARSSTraw=model.datasp$marspec_SST,
-                         varraw=model.datasp$marspec_var,
-                         Turbraw=model.datasp$turbidity,
-                         waveraw=model.datasp$wave.power) 
+                         turbraw=model.datasp$turb,
+                         highSSTraw=model.datasp$highSST, #SST of the warmest month
+                         lowSSTraw=model.datasp$lowSST, #SST of the coldest, ice free month
+                         meanSSTraw=model.datasp$meanSST,
+                         waveraw=model.datasp$wave.power) #combined contribution to the bed shear stress by waves, tides, wind and density-driven circulation
 
 
 par(mfrow=c(2,3))
-plot(density(na.omit(model.covs$MODSSTraw)),main="MODISSST")
-plot(density(na.omit(model.covs$MARSSTraw)),main="MARSST")
-plot(density(na.omit(model.covs$Turbraw)),main="Turb")
-plot(density(na.omit(model.covs$waveraw)),main="wave")
-plot(density(na.omit(model.covs$varraw)),main="var")
+plot(density(na.omit(model.covs$turbraw)),main="Turbidity raw")
+plot(density(na.omit(model.covs$highSSTraw)),main="High SST raw")
+plot(density(na.omit(model.covs$lowSSTraw)),main="Low SST raw")
+plot(density(na.omit(model.covs$meanSSTraw)),main="mean SST raw")
+plot(density(na.omit(model.covs$waveraw)),main="Wave power raw")
 
 
-pairs(~marspec_SST+marspec_var+turbidity+ wave.power, data=model.data,
+pairs(~turbraw+highSSTraw+lowSSTraw+meanSSTraw+ waveraw, data=model.covs,
       main="Scatterplot Matrix of raw environmental variables")
-log.MODSST <- log(model.covs$MODSSTraw)
-log.MARSST <- log(model.covs$MARSSTraw)
-log.var <- log(model.covs$varraw)
-log.turb <- log(model.covs$Turbraw)
+log.turb <- log(model.covs$turbraw)
+log.highSST <- log(model.covs$highSSTraw)
+log.lowSST <- log(model.covs$lowSSTraw)
+log.meanSST <- log(model.covs$meanSSTraw)
 log.wavepower <- log(model.covs$waveraw+1)
 
 
-model.covs$MODsst <- ((log.MODSST-mean(log.MODSST, na.rm=TRUE))/(sd(log.MODSST, na.rm=TRUE))) 
-model.covs$MARsst <- ((log.MARSST-mean(log.MARSST, na.rm=TRUE))/(sd(log.MARSST, na.rm=TRUE))) 
+model.covs$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(2*sd(log.turb, na.rm=TRUE))) 
+model.covs$highSST <- ((log.highSST-mean(log.highSST, na.rm=TRUE))/(2*sd(log.highSST, na.rm=TRUE))) 
 
-model.covs$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(sd(log.turb, na.rm=TRUE)))
+model.covs$lowSST <- ((log.lowSST-mean(log.lowSST, na.rm=TRUE))/(2*sd(log.lowSST, na.rm=TRUE)))
 
-model.covs$var <- ((log.var-mean(log.var, na.rm=TRUE))/(sd(log.var, na.rm=TRUE)))
+model.covs$meanSST <- ((log.meanSST-mean(log.meanSST, na.rm=TRUE))/(2*sd(log.meanSST, na.rm=TRUE)))
 
-model.covs$wavepower <- ((log.wavepower -mean(log.wavepower , na.rm=TRUE))/(sd(log.wavepower , na.rm=TRUE)))
+model.covs$wavepower <- ((log.wavepower -mean(log.wavepower , na.rm=TRUE))/(2*sd(log.wavepower , na.rm=TRUE)))
 
 
 
-pairs(~MARsst+turb+var+ wavepower,data=model.covs,
+par(mfrow=c(2,3))
+plot(density(na.omit(model.covs$turb)),main="Turbidity")
+plot(density(na.omit(model.covs$highSST)),main="High SST")
+plot(density(na.omit(model.covs$lowSST)),main="Low SST")
+plot(density(na.omit(model.covs$meanSST)),main="mean SST")
+plot(density(na.omit(model.covs$wavepower)),main="Wave power")
+
+pairs(~turb+highSST+lowSST+ meanSST+wavepower,data=model.covs,
       main="Scatterplot Matrix of transformed environmental variables")
 
 
