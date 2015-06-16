@@ -197,7 +197,6 @@ log.lowSST <- log(model.covs$lowSSTraw)
 log.meanSST <- log(model.covs$meanSSTraw)
 log.wavepower <- log(model.covs$waveraw+1)
 
-
 model.covs$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(2*sd(log.turb, na.rm=TRUE))) 
 model.covs$highSST <- ((log.highSST-mean(log.highSST, na.rm=TRUE))/(2*sd(log.highSST, na.rm=TRUE))) 
 
@@ -231,7 +230,13 @@ model.covs$skel_dens <- as.numeric(as.vector(model.datasp$skel))
 model.covs$skel_micro <- as.numeric(as.vector(model.datasp$skel.micro))
 model.covs$fam <- factor(model.datasp$fam)
 
-plot(model.covs$cor_size)
+par(mfrow=c(1,1))
+plot(density(na.omit(model.covs$calc_rate)),main="Calc rate")
+plot(density(na.omit(model.covs$col_size)),main="colony sz")
+plot(density(na.omit(model.covs$cor_size)),main="corallite")
+plot(density(na.omit(model.covs$gr_rate)),main="gr rate")
+plot(density(na.omit(model.covs$polyps)),main="polyps")
+plot(density(na.omit(model.covs$skel_dens)),main="skel_dens")
 
 model.covs$gf <- classify(model.covs$gf,
                               c(branching_closed="branching", 
@@ -246,31 +251,94 @@ laminar="tabular",
 massive="massive" , 
 tables_or_plates="tabular"))
 model.covs$gf <- factor(model.covs$gf, levels = c("branching", "digitate","encrusting","tabular", "massive"))
-
-
-mod1 <- glmer(present ~ MARsst + (1 +MARsst|species), data= model.covs,family=binomial(link=logit))
-mod1
-coef(mod1)
-plot(coef(mod1))
-#species distributions of those with negative MARSSST coef should potentially be more in colder water
+plot(model.covs$gf)
 
 
 
-mod <- glmer(present ~ turb+ MARsst+ var + wavepower+ #SKEL DENSITY???
+###TURBIDITY (and corallite size)
+modT <- glmer(present ~ turb + (1 +turb|species), data= model.covs,family=binomial(link=logit))
+modT
+coef(modT)
+#species distributions of those with negative turb coef should generally be found where water is less turbid
+plot(coef(modT))
+
+#Species with larger corallite should be in more turbid water, they're better at expelling sediments and handling the lower light due to turbid water
+modT1 <- glmer(present ~ turb + cor_size:turb+(1 +turb|species), data= model.covs,family=binomial(link=logit))
+modT1
+coef(modT1)
+
+
+###WAVE POWER (and growth form)
+modW <- glmer(present ~ wavepower + (1 +wavepower|species), data= model.covs,family=binomial(link=logit))
+modW
+coef(modW)
+#species with positive coef should be more where wave power is greater (generally offshore/outer reef, higher lat, etc)
+plot(coef(modW))
+
+#Massive/encrusting more robust to wave energy compared to digitate, tabular can go either way
+modW1 <- glmer(present ~ wavepower + gf:wavepower+(1 +wavepower|species), data= model.covs,family=binomial(link=logit))
+modW1
+coef(modW1)
+ggCaterpillar(ranef(modW1, postVar=TRUE))
+dotplot(ranef(modW1, postVar=TRUE))$species[1]
+dotplot(ranef(modW1, postVar=TRUE))$species[2]
+dotchart(fixef(modW1))
+GFwave  <-  function() {
+  dotchart(fixef(modW1))
+}
+to.pdf(GFwave(), 'output/GFwave .pdf', width=6, height=6)
+
+
+###LOW TEMP (SST of the coldest ice free month)
+modLT <- glmer(present ~ lowSST + (1 +lowSST|species), data= model.covs,family=binomial(link=logit))
+modLT
+coef(modLT)
+#species with negative coef should be distributed in colder water (high lat)
+plot(coef(modLT))
+
+#The tolerance of test corals to low water temperature was closely related to their morphologies, with the branching corals being the most vulnerable to bleaching and death by separating the symbiotic polyps from their skeletons. Li, S., Yu, K. F., Shi, Q., Chen, T. R. and Zhao, M. X. (2009) Low water temperature tolerance and responding mode of scleractinian corals in Sanya Bay. Yingyong Shengtai Xuebao [Chinese Journal of Applied Ecology], 20 9: 2289-2295. 
+modLT1 <- glmer(present ~ lowSST + gf:lowSST+(1 +lowSST|species), data= model.covs,family=binomial(link=logit))
+modLT1
+coef(modLT1)
+ggCaterpillar(ranef(modLT1, postVar=TRUE))
+dotplot(ranef(modLT1, postVar=TRUE))$species[1]
+dotplot(ranef(modLT1, postVar=TRUE))$species[2]
+dotchart(fixef(modLT1))
+
+GFtemp  <-  function() {
+  dotchart(fixef(modLT1))
+}
+to.pdf(GFtemp(), 'output/GFtemp .pdf', width=6, height=6)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mod <- glmer(present ~ turb+ MARsst+ var + wavepower+ 
                   gr_rate:turb + gr_rate:MARsst  +gr_rate:var +gr_rate:wavepower +
                   cor_size:turb +cor_size:MARsst  +cor_size:var  +cor_size:wavepower  +
                   gf:turb + gf:MARsst + gf:var + gf:wavepower+
                   (1 + turb+ MARsst+ var + wavepower|species),
                 data= model.covs,family=binomial(link=logit))
 
-ggCaterpillar(ranef(mod, postVar=TRUE))
-dotplot(ranef(mod, postVar=TRUE))$species[1]
-dotplot(ranef(mod, postVar=TRUE))$species[2]
-dotplot(ranef(mod, postVar=TRUE))$species[3]
+ggCaterpillar(ranef(modW1, postVar=TRUE))
+dotplot(ranef(modW1, postVar=TRUE))$species[1]
+dotplot(ranef(modW1, postVar=TRUE))$species[2]
+dotplot(ranef(modW1, postVar=TRUE))$species[3]
 dotplot(ranef(mod, postVar=TRUE))$species[4]
 dotplot(ranef(mod, postVar=TRUE))$species[5]
-dotchart(fixef(mod))
-dotchart(coef(mod))
+dotchart(fixef(modW1))
+dotchart(coef(modW1))
 
 
 mod.wp <- glmer(present ~ wavepower+
