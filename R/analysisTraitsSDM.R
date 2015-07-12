@@ -327,7 +327,9 @@ modT2 <- glmer(present ~ turb + cor_size:turb+col_size:turb+(1 +turb|species), d
 modT2
 coef(modT2)
 
-
+#coral shape should vary with resistence to turbidity (sediment doesn't settle well on branching morphology but would settle on table/plate forms easily)
+mod T3 <- glmer(present ~ turb + gf:turb+(1 +turb|species), data= model.datasp,family=binomial(link=logit))
+modT3
 
 
 modPt <- glmer(present ~ PAR + turb + cor_size:PAR+lower:PAR+cor_size:turb+lower:turb+(1 +PAR+turb|species), data= model.datasp,family=binomial(link=logit))
