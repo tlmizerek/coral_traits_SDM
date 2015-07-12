@@ -248,7 +248,7 @@ plot(model.datasp$gr_rate)
 
 #PAR
 #turbidity
-#temperature (low? variability)
+#temperature (low. variability?)
 #############
 #corallite size
 #depth
@@ -262,7 +262,7 @@ coef(modP)
 #species distributions of those with negative PAR coef should generally be found where less light
 plot(coef(modP))
 
-#Species that can be found deeper can be found where PAR is lower because they can hendle low light 
+#Species that can be found deeper can be found where PAR is lower because they can handle low light 
 modP1 <- glmer(present ~ PAR + lower:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
 modP1
 coef(modP1)
@@ -292,33 +292,21 @@ coef(modP4)
 modSST<- glmer(present ~lowtemp + (1 +  lowtemp |species), data= model.datasp,family=binomial(link=logit))
 modSST
 coef(modSST)
-#species distributions of those with negative PAR coef should generally be found where less light
+#species distributions of those with negative SST coef should generally be found where temp lower
 plot(coef(modSST))
 
-#Species that can be found deeper can be found where PAR is lower because they can hendle low light 
+#Species with faster growth rates can do better in colder water to outcompete macroalgae 
 modSST1 <- glmer(present ~ lowtemp +
                  gr_rate:lowtemp+(1 +lowtemp|species), data= model.datasp,family=binomial(link=logit))
 modSST1
 coef(modSST1)
 plot(coef(modSST1))
 
-#Species with larger corallites can be found where PAR is low because they have more exposure to access light
-modP2 <- glmer(present ~ PAR + cor_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
-modP2
-coef(modP2)
-plot(coef(modP2))
-
-
-
-modP3 <- glmer(present ~ PAR + 
-                 cor_size:PAR+
-                 lower:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
-modP3
-coef(modP3)
-
-modP4 <- glmer(present ~ PAR + cor_size:PAR+lower:PAR+col_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
-modP4
-coef(modP4)
+#Species with larger colony size may be better competitors in cold water
+modSST2 <- glmer(present ~ PAR + col_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modSST2
+coef(modSST2)
+plot(coef(modSST2))
 
 
 
