@@ -7,19 +7,14 @@ library(ncdf4)
 source('R/functions.R')
 
 #traits
-#corallite size / turbidity? sediment rejection (from Rachello dolmen)
-
-#lower depth
-#depth range
-#growth rate
-
-#symbiodinium diversity or presence of a particular clade
-#symbiodinium density
-#range?
-#colony max size
+#corallite size / turbidity, sediment rejection increased with larger corallite size
+#growth form / wave power, robust growth forms are more resilient to wave energy
+#growth rate / wave power, if you grow fast, you can be more stable in high wave energy
+#calcification or growth rate / SST, higher growth rate does better in higher temp??
+#sediment rejection less to do with branching corals because not as much sediment settles on branches
 
  
-CTDB <- read.csv("data/ctdb_20150525.csv", as.is=TRUE)
+CTDB <- read.csv("data/ctdb_20150630.csv", as.is=TRUE)
 CTDB[is.na(CTDB) == T] = 0
 CTDB[CTDB == "unknown"] <- NA
 
@@ -33,7 +28,7 @@ traits$morphfam <- CTDB$family_morphology[match(rownames(traits), CTDB$specie_na
 traits$master_species <- rownames(traits) 
 
 
-veron <- read.csv("data/Veron20150525.csv", header=TRUE) #presence/absence
+veron <- read.csv("data/Veron20150603.csv", header=TRUE) #presence/absence
 
 test<-veron$Revised.CTDB.name
 test2<-traits$master_species
@@ -43,28 +38,77 @@ test[test %in% test2 == F]
 
 traitsveron <- merge(x=veron, y=traits, by.x="Revised.CTDB.name", by.y="master_species")
 
-PAtraits <- traitsveron[c("Revised.CTDB.name", "Latitude...original", "Longitude...original","Calcification.rate","Colony.maximum.diameter","Corallite.width.maximum","Growth.form.typical","Growth.rate" ,"Polyps.per.area","Skeletal.density","Skeletal.micro.density","molefam","morphfam")] #species, lat, long, traits
+PAtraits <- traitsveron[c("Revised.CTDB.name", "Latitude...original", "Longitude...original","Calcification.rate","Colony.maximum.diameter","Corallite.width.maximum","Growth.form.typical","Growth.rate" ,"Polyps.per.area","Depth.lower","Depth.upper" ,"Skeletal.density","Skeletal.micro.density","molefam","morphfam")] #species, lat, long, traits
 
-COOR <- as.matrix(PAtraits[,3:2])#long, lat
-layers <- list.files(path="/Users/tmizerek/Documents/Biomod/BIOMOD2/Data_tif", pattern='tif', full.names=TRUE )
-predictors <- stack(layers[c(54,48, 1, 40, 60, 28)]) 
-#(stdev(temp variability), SST_p50, CHL, skewness, TSM, PAR) datum=WGS84
-newpredictors <- extract(predictors, COOR)
-newpredictors <- cbind(COOR,newpredictors)
-newpredictors <- as.data.frame(newpredictors)
+#COOR <- as.matrix(PAtraits[,3:2])#long, lat
+#layers <- list.files(path="/Users/tmizerek/Documents/Biomod/BIOMOD2/Data_tif", pattern='tif$', full.names=TRUE )
+# predictors <- stack(layers[c(168, 37, 48,49, 60,61)]) #42 is low temperature??
+# #(stdev(temp variability), SST_p50, CHL, skewness, TSM, PAR) datum=WGS84
+# plot(predictors)
+# newpredictors <- extract(predictors, COOR)
+# newpredictors <- cbind(COOR,newpredictors)
+# newpredictors <- as.data.frame(newpredictors)
+# 
+# library(raster)
+# # get a vector of file names of the rasters with extent A. This code will return a vector of all .tif files in the given path. Change tif to whatever the extension is
+# ff1 <- list.files('c:/path/to/directory/containing/the/rasters', patt='\\.tif$') # change the first argument to the path containing the first set of rasters
+# # same for the rasters with extent B
+# ff2 <- list.files('c:/path/to/directory/containing/the/rasters', patt='\\.tif$') # change the first argument to the path containing the second set of rasters
+# # check the vectors to make sure they contain the file names you expected:
+# ff1
+# ff2
+# 
+# # stack them
+# s1 <- stack(ff1)
+# s2 <- stack(ff2)
+# 
+# layersnew <- layers[,c(28:167)]
+# layersold <- layers[c(1:27, 168:203)]
 
-#Sea surface temperature derived variables were obtained from the second version of the coral reef temperature anomaly database (CoRTAD) [23]. This database contains global SST and related thermal stress metrics at an approximately 4-km resolution weekly from 1982 through 2008, derived from measurements from the Advanced Very High Resolution Radiometer onboard NOAA suite of polar orbiting satellites.
+### 
+library(sp)
+library(raster)
+layers <- list.files(path="/Users/tmizerek/Documents/Biomod/BIOMOD2/Data_tif", pattern='tif$', full.names=TRUE)
+layers1 <- layers[12:151]
+layers2 <- layers[-(12:151)]
+s1 <- stack(layers1)
+s2 <- stack(layers2)
+xy <- setNames(PAtraits[,3:2], c('lon', 'lat'))
+d1 <- extract(s1, xy)
+d2 <- extract(s2, xy)
+ss <- cbind(xy, d1, d2)
+
+# months <- format(as.Date(names(s1), format='par_%Y_%m_%d'), '%B %Y')
+# winter_ind_split <- split(names(s1), list(format(as.Date(names(s1), format='par_%Y_%m_%d'), '%Y'),
+#                       grepl('June|July', format(as.Date(names(s1), format='par_%Y_%m_%d'), '%B'))))
+# winter_ind_split <- winter_ind_split[grep('TRUE', names(winter_ind_split))]
+# winter_ind_split <- winter_ind_split[sapply(winter_ind_split, length) > 0]
+# winter_dat <- setNames(lapply(seq_along(winter_ind_split), function(i) {
+#   nm <- names(winter_ind_split)[i]
+#   d <- ss[, winter_ind_split[[i]]]
+#   rowMeans(d)
+# }), paste0('par_junejuly_', sub('\\.TRUE', '', names(winter_ind_split))))
+# ss <- cbind.data.frame(dat, winter_dat)
+# ss <- cbind.data.frame(dat, par_all_years_mean_junejuly=rowMeans(as.data.frame(winter_dat)))
+
+## Or just this one line...
+#ss$winter_par <- rowMeans(ss[, grep('_06_|_07_', names(s1), val=T)])
+## if only want a subset of years
+ss$winter_par_early <- rowMeans(ss[, grep('9._06_|9._07_|2000_06_|2000_07_|2001_06_|2001_07_|2002_06_|2002_07_', names(s1), val=TRUE)]) #5 year average
+
+ss<- ss[,c(1,2,143,160, 161, 166, 169,171)]
+#Sea surface temperature derived variables were obtained from the second version of the coral reef temperature anomaly database (CoRTAD). This database contains global SST and related thermal stress metrics at an approximately 4-km resolution weekly from 1982 through 2008, derived from measurements from the Advanced Very High Resolution Radiometer onboard NOAA suite of polar orbiting satellites.
 
 
 # Grab a vector of species names, as characters
 sppList <- as.character(unique(PAtraits$Revised.CTDB.name))
-latlon <- paste0(as.character(newpredictors[,'Latitude...original']),":",as.character(newpredictors[, 'Longitude...original'])) # paste lat and long together into a character string
+latlon <- paste0(as.character(ss[,'lat']),":",as.character(ss[, 'lon'])) # paste lat and long together into a character string
 uniquelatlon = unique(latlon) # find all unique lat-lon locations
 
-dat <- matrix(data = 0, nrow = length(uniquelatlon), ncol = 315) # make an empty matrix where number of rows is number of unique locations and number of columns is for species (307) + lat/long (2) + envt var (6). 
+dat <- matrix(data = 0, nrow = length(uniquelatlon), ncol = 314) # make an empty matrix where number of rows is number of unique locations and number of columns is for species (306) + lat/long (2) + envt var (6). 
 dat <- as.data.frame(dat) # convert to a data frame
 names(dat)[1:2] = c("Latitude","Longitude")
-names(dat)[3:8] = names(as.data.frame(newpredictors))[3:8] # grab names of envt vars from newpredictors matrix
+names(dat)[3:8] = names(as.data.frame(ss))[c(3:8)] # grab names of envt vars from newpredictors matrix
 names(dat)[9:ncol(dat)] = sppList # rename the rest of the columns using the names in 'cols' from above
 
 for (i in 1:length(uniquelatlon)){
@@ -75,10 +119,10 @@ for (i in 1:length(uniquelatlon)){
 for (i in 1:nrow(dat)){
   lat = dat$Latitude[i]
   lon = dat$Longitude[i]
-  rows1 = which(lat == newpredictors$Latitude...original)
-  rows2 = which(lon == newpredictors$Longitude...original)
+  rows1 = which(lat == ss$lat)
+  rows2 = which(lon == ss$lon)
   matches = intersect(rows1,rows2) # find rows that are the same in both groups
-  dat[i,3:8] = newpredictors[matches[1],3:8] # grab columns 3:6 from the 1st row in 'matches', since all rows in matches should have the same data in columns 3:6 (they're all the same site)
+  dat[i,3:8] = ss[matches[1],3:8] # grab columns 3:6 from the 1st row in 'matches', since all rows in matches should have the same data in columns 3:6 (they're all the same site)
   
   # Now go through the contents of 'matches', find out what species is listed in each row of ALAtraits contained within 'matches', and put a 1 into the correct species column in 'dat' to denote species presence at the current site. 
   for (j in 1:length(matches)){
@@ -95,188 +139,233 @@ for (i in 1:nrow(dat)){
 
 enviro <- dat #each lat/long listed in rows and environmental variable values and species presence/absence for each plot across columns
 
-######################### POLLOCK SCRIPT ###################################
+#####
 #DATA
 enviro["site"] <- NA # creates the new column named "site" filled with "NA". Sites are unique lat/longs
 
-#?
 enviro$site <- c(1:225) 
 
-PA <- melt(enviro[c(9:316)],id.vars="site") #extract species' presence absence data
+PA <- melt(enviro[c(9:315)],id.vars="site") #extract species' presence absence data
 
 colnames(PA)[2:3] <- c("species","present")
 
-model.data <- merge(PA, enviro[-c(9:315)], by='site',all.x=T) #merge presence/absences with environmental data (site is the last column, hence 315 and not 316)
+model.data <- merge(PA, enviro[-c(9:314)], by='site',all.x=T) #merge presence/absences with environmental data (site is the last column, hence 315 and not 316)
 
 #rm(PA)
 
 model.data <- merge(model.data,traits,by.y='master_species',by.x='species',all.x=T) #add species traits
 
-#These species have corallite size and calcification and diverse ranges
-model.datasp <- model.data[ which((model.data$species=='Seriatopora hystrix') |
-                                  (model.data$species=='Acropora valida') | 
-                                  (model.data$species=='Pocillopora damicornis') | 
-                                  (model.data$species=='Acropora hyacinthus') | 
-                                  (model.data$species=='Acropora solitaryensis') |
-                                  (model.data$species=='Porites annae') | 
-                                  (model.data$species=='Porites cylindrica') |
-                                  (model.data$species=='Porites lobata') | 
-                                  (model.data$species=='Acropora muricata') | 
-                                  (model.data$species=='Acropora pulchra') | 
-                                  (model.data$species=='Acropora glauca') | 
-                                  (model.data$species=='Acropora longicyathus') | 
-                                   (model.data$species=='Porites lutea') | 
-                                   (model.data$species=='Isopora palifera') | 
-                                   (model.data$species=='Montipora verrucosa') | 
-                                   (model.data$species=='Porites australiensis') |
-                                     (model.data$species=='Acropora horrida') | 
-                                   (model.data$species=='Acropora humilis') |
-                                   (model.data$species=='Acropora aspera') |
-                                   (model.data$species=='Pavona clavus') |
-                                   (model.data$species=='Leptoria phrygia') |
-                                   (model.data$species=='Gardineroseris planulata') |
-                                   (model.data$species=='Goniastrea retiformis') |
-                                   (model.data$species=='Pavona varians') |
-                                   (model.data$species=='Dipsastraea pallida') |
-                                   (model.data$species=='Oulophyllia crispa')),]
-######################DIFF SPECIES######################
-#model.datasp <- model.data[ which(
-(model.data$species=='Acropora gemmifera') | #Solitaries
+#These have corallite size, lower depth, growth form
+model.datasp <- model.data[ which((model.data$species=='Seriatopora hystrix') |  
+                                    (model.data$species=='Seriatopora caliendrum') |                                 
+                                    (model.data$species=='Acropora gemmifera') | #Solitaries   no colony size
                                     (model.data$species=='Acropora hyacinthus') | #Japan
+                                    (model.data$species=='Acropora nasuta') |
                                     (model.data$species=='Acropora microclados') | #Solitaries
                                     (model.data$species=='Acropora monticulosa') | #Solitaries
                                     (model.data$species=='Pocillopora damicornis') | #AB-brooder
+                                    (model.data$species=='Pocillopora eydouxi') | 
                                     (model.data$species=='Isopora cuneata') | #AB-brooder
-                                    (model.data$species=='Micromussa lordhowensis') | #AB - more abundandant in subtropics
-                                    (model.data$species=='Paragoniastrea australensis') | #AB - more abundandant in subtropics
+                                    (model.data$species=='Isopora palifera') |
+                                    (model.data$species=='Paragoniastrea australensis') | #AB - more abund in subtropics
                                     (model.data$species=='Turbinaria radicalis') | #AB
                                     (model.data$species=='Turbinaria mesenterina') | #AB
+                                    (model.data$species=='Turbinaria frondens') | 
                                     (model.data$species=='Plesiastrea versipora') |
-                                    (model.data$species=='Acropora humilis') |
-                                    (model.data$species=='Dipsastraea favus') |
-                                    (model.data$species=='Fungia fungites') |
-                                    (model.data$species=='Acropora glauca') |
-                                    (model.data$species=='Turbinaria reniformis') |
-                                    (model.data$species=='Platygyra sinensis') |
-                                    (model.data$species=='Porites stephensoni') |
-                                    (model.data$species=='Stylophora pistillata') |
-                                    (model.data$species=='Mycedium elephantotus') |
-                                    
-                                    (model.data$species=='Acanthastrea echinata') |
-                                    (model.data$species=='Isopora brueggemanni') |
-                                    (model.data$species=='Acropora digitifera') |
-                                    (model.data$species=='Acropora donei') |
-                                    (model.data$species=='Acropora robusta') |
-                                    (model.data$species=='Acropora yongei') |
-                                    (model.data$species=='Coscinaraea exesa')|
-                                    (model.data$species=='Coscinaraea columna') |
-                                    (model.data$species=='Dipsastraea pallida') |
-                                    (model.data$species=='Psammocora contigua') |
+                                    (model.data$species=='Porites lichen') |
+                                    (model.data$species=='Porites lobata') |
+                                    (model.data$species=='Goniastrea lobata') |
+                                    (model.data$species=='Goniastrea retiformis') |
+                                    (model.data$species=='Paragoniastrea australiensis') |
+                                    (model.data$species=='Galaxea fascicularis') |
                                     (model.data$species=='Porites vaughani')),]
 
 
-
+aggregate(cbind(present) ~ species, data = model.datasp, sum)
+aggregate(cbind(present) ~ site, data = model.datasp, sum)
 
 #select species
 #species, p/a, all envt vars
-model.covs <- data.frame(present=model.datasp$present,
-                          species=model.datasp$species, 
-                          SSTraw=model.datasp$SST_p50, 
-                          varraw=model.datasp$stdev,
-                          skewnessraw=model.datasp$skewnes, 
-                          Chlraw=model.datasp$Chl_50p, 
-                          PARraw=model.datasp$PAR_50P, 
-                          TSMraw=model.datasp$TSM_50P) 
 
-
+level.plot(model.datasp[,6], model.datasp[,5:4]) #Chl
+level.plot(model.datasp[,7], model.datasp[,5:4]) #low temp
+level.plot(model.datasp[,8], model.datasp[,5:4]) #avg temp
+level.plot(model.datasp[,9], model.datasp[,5:4]) #temp var
+level.plot(model.datasp[,10], model.datasp[,5:4]) #turb
+level.plot(model.datasp[,11], model.datasp[,5:4]) #PAR
 
 par(mfrow=c(2,3))
-plot(density(na.omit(model.covs$SST)),main="SST")
-plot(density(na.omit(model.covs$TSMraw)),main="TSM raw")
-plot(density(na.omit(model.covs$Chlraw)),main="Chl raw")
-plot(density(na.omit(model.covs$PARraw)),main="PAR raw")
-plot(density(na.omit(model.covs$skewnessraw)),main="skewness raw")
-plot(density(na.omit(model.covs$varraw)),main="var raw")
+plot(density(na.omit(model.datasp$Chl_50p)),main="Chl")
+plot(density(na.omit(model.datasp$SST_2p)),main="low temp")
+plot(density(na.omit(model.datasp$SST_50p)),main="avg temp")
+plot(density(na.omit(model.datasp$stdev)),main="temp var")
+plot(density(na.omit(model.datasp$TSM_50P)),main="turb")
+plot(density(na.omit(model.datasp$winter_par_early)),main="winter par")
 
-pairs(~SST+turb+chl+ salmin + salmax, data=model.data,
+pairs(~Chl_50p+SST_2p+SST_50p+ stdev + TSM_50P +winter_par_early, data=model.datasp,
       main="Scatterplot Matrix of raw environmental variables")
-log.SST <- log(model.data$SST)
-log.turb <- log(model.covs$TSMraw)
-log.chl <- log(model.data$chl)
-log.salmax <- log(model.data$salmax)
-log.salmin <- log(model.data$salmin)
+log.chl <- log(model.datasp$Chl_50p)
+log.turb <- log(model.datasp$TSM_50p)
+log.lowtemp <- log(model.datasp$SST_2p)
+log.avgtemp <- log(model.datasp$SST_50p)
+log.var <- log(model.datasp$stdev)
+log.PAR <- log(model.datasp$winter_par_early)
+
+model.datasp$PAR <- ((log.PAR-mean(log.PAR, na.rm=TRUE))/(sd(log.PAR, na.rm=TRUE)))
+
+model.datasp$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(sd(log.turb, na.rm=TRUE)))
+
+model.datasp$chl <- ((log.chl-mean(log.chl, na.rm=TRUE))/(sd(log.chl, na.rm=TRUE)))
+
+model.datasp$lowtemp <- ((log.lowtemp -mean(log.lowtemp, na.rm=TRUE))/(sd(log.lowtemp, na.rm=TRUE)))
+
+model.datasp$var <- ((log.var-mean(log.var, na.rm=TRUE))/(sd(log.var, na.rm=TRUE)))
+
+model.datasp$avgtemp <- ((log.avgtemp-mean(log.avgtemp, na.rm=TRUE))/(sd(log.avgtemp, na.rm=TRUE)))
 
 
-model.data$SST <- ((log.SST-mean(log.SST, na.rm=TRUE))/(sd(log.SST, na.rm=TRUE))) 
-
-model.covs$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(sd(log.turb, na.rm=TRUE)))
-
-model.data$chl <- ((log.chl-mean(log.chl, na.rm=TRUE))/(sd(log.chl, na.rm=TRUE)))
-
-model.data$salmax <- ((log.salmax -mean(log.salmax , na.rm=TRUE))/(sd(log.salmax , na.rm=TRUE)))
-
-model.data$salmin <- ((log.salmin-mean(log.salmin, na.rm=TRUE))/(sd(log.salmin, na.rm=TRUE)))
-
-
-pairs(~SST+turb+chl+ salmax + salmin,data=model.data,
-      main="Scatterplot Matrix of transformed environmental variables")
-
-
-pairs(~SSTraw+varraw+skewnessraw+Chlraw+ PARraw + TSMraw, data=model.covs,
-      main="Scatterplot Matrix of raw environmental variables")
 ######################
-log.SST <- log(model.covs$SSTraw)
-log.var <- log(model.covs$varraw)
-log.Chl <- log(model.covs$Chlraw)
-log.PAR <- log(model.covs$PARraw)
-log.TSM <- log(model.covs$TSMraw)
-log.skw <- log(model.covs$skewnessraw)
 
-
-# Rescale variables as necessary (e.g. SST logged, centered, scaled)
-
-
-model.covs$SST <- ((log.SST-mean(log.SST, na.rm=TRUE))/(sd(log.SST, na.rm=TRUE))) 
-
-model.covs$var <- ((log.var-mean(log.var, na.rm=TRUE))/(sd(log.var, na.rm=TRUE)))
-
-model.covs$Chl <- ((log.Chl-mean(log.Chl, na.rm=TRUE))/(sd(log.Chl, na.rm=TRUE)))
-
-model.covs$PAR <- ((log.PAR-mean(log.PAR, na.rm=TRUE))/(sd(log.PAR, na.rm=TRUE)))
-
-model.covs$TSM <- ((log.TSM-mean(log.TSM, na.rm=TRUE))/(sd(log.TSM, na.rm=TRUE)))
-
-model.covs$skw <- model.covs$skewnessraw
-model.covs$skwtr <- ((log.skw-mean(log.skw, na.rm=TRUE))/(sd(log.skw, na.rm=TRUE)))
-
-pairs(~SST+var+Chl+ PAR + TSM + skw,data=model.covs,
-      main="Scatterplot Matrix of transformed environmental variables")
-
-
-#
 
 
 #ADD trait data
-model.covs$calc_rate <- as.numeric(as.vector(model.datasp$Calcification.rate))
-model.covs$col_size <- as.numeric(as.vector(model.datasp$Colony.maximum.diameter))
-model.covs$cor_size <- as.numeric(as.vector(model.datasp$Corallite.width.maximum))
-model.covs$gf <- factor(model.datasp$Growth.form.typical)
-model.covs$gr_rate <- as.numeric(as.vector(model.datasp$Growth.rate))
-model.covs$polyps <- as.numeric(as.vector(model.datasp$Polyps.per.area))
-model.covs$skel_dens <- as.numeric(as.vector(model.datasp$Skeletal.density))
-model.covs$skel_micro <- as.numeric(as.vector(model.datasp$Skeletal.micro.density))
-model.covs$fam <- factor(model.datasp$molefam)
+model.datasp$calc_rate <- as.numeric(as.vector(model.datasp$Calcification.rate))
+model.datasp$col_size <- as.numeric(as.vector(model.datasp$Colony.maximum.diameter))
+model.datasp$cor_size <- as.numeric(as.vector(model.datasp$Corallite.width.maximum))
+model.datasp$gf <- factor(model.datasp$Growth.form.typical)
+model.datasp$gr_rate <- as.numeric(as.vector(model.datasp$Growth.rate))
+model.datasp$polyps <- as.numeric(as.vector(model.datasp$Polyps.per.area))
+model.datasp$skel_dens <- as.numeric(as.vector(model.datasp$Skeletal.density))
+model.datasp$skel_micro <- as.numeric(as.vector(model.datasp$Skeletal.micro.density))
+model.datasp$fam <- factor(model.datasp$molefam)
+model.datasp$lower <- as.numeric(as.vector(model.datasp$Depth.lower))
+model.datasp$upper <- as.numeric(as.vector(model.datasp$Depth.upper))
 
-plot(model.covs$cor_size)
+plot(model.datasp$cor_size)
+plot(model.datasp$lower)
+plot(model.datasp$gr_rate)
+
+
+#PAR
+#turbidity
+#temperature (low? variability)
+#############
+#corallite size
+#depth
 
 
 
-model <- glmer(present ~turb + (1 +  turb |species),
-                  data= model.covs,family=binomial(link=logit)) 
+###PAR
+modP<- glmer(present ~PAR + (1 +  PAR |species), data= model.datasp,family=binomial(link=logit))
+modP
+coef(modP)
+#species distributions of those with negative PAR coef should generally be found where less light
+plot(coef(modP))
+
+#Species that can be found deeper can be found where PAR is lower because they can hendle low light 
+modP1 <- glmer(present ~ PAR + lower:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP1
+coef(modP1)
+plot(coef(modP1))
+
+#Species with larger corallites can be found where PAR is low because they have more exposure to access light
+modP2 <- glmer(present ~ PAR + cor_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP2
+coef(modP2)
+plot(coef(modP2))
+
+
+
+modP3 <- glmer(present ~ PAR + 
+                 cor_size:PAR+
+                 lower:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP3
+coef(modP3)
+
+modP4 <- glmer(present ~ PAR + cor_size:PAR+lower:PAR+col_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP4
+coef(modP4)
+
+
+
+###low temp
+modSST<- glmer(present ~lowtemp + (1 +  lowtemp |species), data= model.datasp,family=binomial(link=logit))
+modSST
+coef(modSST)
+#species distributions of those with negative PAR coef should generally be found where less light
+plot(coef(modSST))
+
+#Species that can be found deeper can be found where PAR is lower because they can hendle low light 
+modSST1 <- glmer(present ~ lowtemp +
+                 gr_rate:lowtemp+(1 +lowtemp|species), data= model.datasp,family=binomial(link=logit))
+modSST1
+coef(modSST1)
+plot(coef(modSST1))
+
+#Species with larger corallites can be found where PAR is low because they have more exposure to access light
+modP2 <- glmer(present ~ PAR + cor_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP2
+coef(modP2)
+plot(coef(modP2))
+
+
+
+modP3 <- glmer(present ~ PAR + 
+                 cor_size:PAR+
+                 lower:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP3
+coef(modP3)
+
+modP4 <- glmer(present ~ PAR + cor_size:PAR+lower:PAR+col_size:PAR+(1 +PAR|species), data= model.datasp,family=binomial(link=logit))
+modP4
+coef(modP4)
+
+
+
+
+###TURBIDITY (and corallite size)
+modT <- glmer(present ~ turb + (1 +turb|species), data= model.datasp,family=binomial(link=logit))
+modT
+coef(modT)
+#species distributions of those with negative turb coef should generally be found where water is less turbid
+plot(coef(modT))
+
+#Species with larger corallite should be in more turbid water, they're better at expelling sediments and handling the lower light due to turbid water
+modT1 <- glmer(present ~ turb + cor_size:turb+(1 +turb|species), data= model.datasp,family=binomial(link=logit))
+modT1
+coef(modT1)
+
+modT2 <- glmer(present ~ turb + cor_size:turb+col_size:turb+(1 +turb|species), data= model.datasp,family=binomial(link=logit))
+modT2
+coef(modT2)
+
+
+
+
+modPt <- glmer(present ~ PAR + turb + cor_size:PAR+lower:PAR+cor_size:turb+lower:turb+(1 +PAR+turb|species), data= model.datasp,family=binomial(link=logit))
+modPt
+coef(modPt)
+ggCaterpillar(ranef(modPt, postVar=TRUE))
+dotplot(ranef(modPt, postVar=TRUE))$species[1]
+dotplot(ranef(modPt, postVar=TRUE))$species[2]
+dotchart(fixef(modPt))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 model1 <- glmer(present ~SST + skel_dens:SST + 
                  (1 +  SST |species),
-               data= model.covsB,family=binomial(link=logit)) 
+               data= model.dataspB,family=binomial(link=logit)) 
 
 model2 <- glmer(present ~ TSM+ SST+ 
                   skel_dens:TSM + skel_dens:SST + 
