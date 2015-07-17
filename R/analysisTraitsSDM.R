@@ -68,7 +68,18 @@ PAtraits <- traitsveron[c("Revised.CTDB.name", "Latitude...original", "Longitude
 ### 
 library(sp)
 library(raster)
-layers <- list.files(path="/Users/tmizerek/Documents/Biomod/BIOMOD2/Data_tif", pattern='tif$', full.names=TRUE)
+layers <- list.files(path="data//Data_tif", pattern='tif$', full.names=TRUE)
+
+r<-raster(layers[143],crs= '+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
+r2<-raster(layers[152])
+
+r3<-projectRaster(r,r2)
+
+#####from Daisy
+#extract envt data from r&r3 and compare
+
+
+
 layers1 <- layers[12:151]
 layers2 <- layers[-(12:151)]
 s1 <- stack(layers1)
