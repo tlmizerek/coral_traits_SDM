@@ -42,43 +42,11 @@ traitsveron <- merge(x=veron, y=traits, by.x="Revised.CTDB.name", by.y="master_s
 
 PAtraits <- traitsveron[c("Revised.CTDB.name", "Latitude...original", "Longitude...original","Calcification.rate","Colony.maximum.diameter","Corallite.width.maximum","Growth.form.typical","Growth.rate" ,"Polyps.per.area","Depth.lower","Depth.upper" ,"Skeletal.density","Skeletal.micro.density","molefam","morphfam")] #species, lat, long, traits
 
-#COOR <- as.matrix(PAtraits[,3:2])#long, lat
-#layers <- list.files(path="/Users/tmizerek/Documents/Biomod/BIOMOD2/Data_tif", pattern='tif$', full.names=TRUE )
-# predictors <- stack(layers[c(168, 37, 48,49, 60,61)]) #42 is low temperature??
-# #(stdev(temp variability), SST_p50, CHL, skewness, TSM, PAR) datum=WGS84
-# plot(predictors)
-# newpredictors <- extract(predictors, COOR)
-# newpredictors <- cbind(COOR,newpredictors)
-# newpredictors <- as.data.frame(newpredictors)
-# 
-# library(raster)
-# # get a vector of file names of the rasters with extent A. This code will return a vector of all .tif files in the given path. Change tif to whatever the extension is
-# ff1 <- list.files('c:/path/to/directory/containing/the/rasters', patt='\\.tif$') # change the first argument to the path containing the first set of rasters
-# # same for the rasters with extent B
-# ff2 <- list.files('c:/path/to/directory/containing/the/rasters', patt='\\.tif$') # change the first argument to the path containing the second set of rasters
-# # check the vectors to make sure they contain the file names you expected:
-# ff1
-# ff2
-# 
-# # stack them
-# s1 <- stack(ff1)
-# s2 <- stack(ff2)
-# 
-# layersnew <- layers[,c(28:167)]
-# layersold <- layers[c(1:27, 168:203)]
-
 ### 
 library(sp)
 library(raster)
 layers <- list.files(path="data//Data_tif", pattern='tif$', full.names=TRUE)
 
-
-
-#####from Daisy
-#extract envt data from r&r3 and compare
-#r<-raster(layers[143],crs= '+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
-#r2<-raster(layers[152])
-#r3<-projectRaster(r,r2)
 
 
 layers1 <- layers[44:48]
@@ -106,11 +74,11 @@ ss <- cbind(xy, d1, d2)
 ## Or just this one line...
 #ss$winter_par <- rowMeans(ss[, grep('_06_|_07_', names(s1), val=T)])
 ## if only want a subset of years
-ss$winter_par_early <- rowMeans(ss[, grep('9._06_|9._07_|2000_06_|2000_07_|2001_06_|2001_07_|2002_06_|2002_07_', names(s1), val=TRUE)]) #5 year average
+ss$winter_par_early <- rowMeans(ss[, grep('_1998_06_|_1998_07_|_1999_06_|_1999_07_|2000_06_|_2000_07_|_2001_06_|_2001_07_|_2002_06_|_2002_07_', names(s2), val=TRUE)]) #5 year average
 
 ss<- ss[,c(1,2,3:7, 51)]
 #Sea surface temperature derived variables were obtained from the second version of the coral reef temperature anomaly database (CoRTAD). This database contains global SST and related thermal stress metrics at an approximately 4-km resolution weekly from 1982 through 2008, derived from measurements from the Advanced Very High Resolution Radiometer onboard NOAA suite of polar orbiting satellites.
-
+ss <- na.omit(ss) #I need to figure out how to extract TSM values for locations that are missing values (75) so this is only temporary
 
 # Grab a vector of species names, as characters
 sppList <- as.character(unique(PAtraits$Revised.CTDB.name))
@@ -155,7 +123,7 @@ enviro <- dat #each lat/long listed in rows and environmental variable values an
 #DATA
 enviro["site"] <- NA # creates the new column named "site" filled with "NA". Sites are unique lat/longs
 
-enviro$site <- c(1:225) 
+enviro$site <- c(1:218) #increase if empty TSM values are filled in 
 
 PA <- melt(enviro[c(9:315)],id.vars="site") #extract species' presence absence data
 
@@ -199,41 +167,38 @@ aggregate(cbind(present) ~ site, data = model.datasp, sum)
 #select species
 #species, p/a, all envt vars
 
-level.plot(model.datasp[,6], model.datasp[,5:4]) #Chl
-level.plot(model.datasp[,7], model.datasp[,5:4]) #low temp
-level.plot(model.datasp[,8], model.datasp[,5:4]) #avg temp
+level.plot(model.datasp[,6], model.datasp[,5:4]) #low temp
+level.plot(model.datasp[,7], model.datasp[,5:4]) #avg temp
+level.plot(model.datasp[,8], model.datasp[,5:4]) #high temp
 level.plot(model.datasp[,9], model.datasp[,5:4]) #temp var
 level.plot(model.datasp[,10], model.datasp[,5:4]) #turb
 level.plot(model.datasp[,11], model.datasp[,5:4]) #PAR
 
 par(mfrow=c(2,3))
-plot(density(na.omit(model.datasp$Chl_50p)),main="Chl")
+
 plot(density(na.omit(model.datasp$SST_2p)),main="low temp")
 plot(density(na.omit(model.datasp$SST_50p)),main="avg temp")
+plot(density(na.omit(model.datasp$SST_98p)),main="high temp")
 plot(density(na.omit(model.datasp$stdev)),main="temp var")
 plot(density(na.omit(model.datasp$TSM_50P)),main="turb")
 plot(density(na.omit(model.datasp$winter_par_early)),main="winter par")
 
-pairs(~Chl_50p+SST_2p+SST_50p+ stdev + TSM_50P +winter_par_early, data=model.datasp,
+pairs(~SST_2p+SST_50p+ SST_98p+stdev + TSM_50P +winter_par_early, data=model.datasp,
       main="Scatterplot Matrix of raw environmental variables")
-log.chl <- log(model.datasp$Chl_50p)
-log.turb <- log(model.datasp$TSM_50p)
+
 log.lowtemp <- log(model.datasp$SST_2p)
 log.avgtemp <- log(model.datasp$SST_50p)
+log.hightemp <- log(model.datasp$SST_98p)
 log.var <- log(model.datasp$stdev)
+log.turb <- log(model.datasp$TSM_50P)
 log.PAR <- log(model.datasp$winter_par_early)
 
-model.datasp$PAR <- ((log.PAR-mean(log.PAR, na.rm=TRUE))/(sd(log.PAR, na.rm=TRUE)))
-
-model.datasp$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(sd(log.turb, na.rm=TRUE)))
-
-model.datasp$chl <- ((log.chl-mean(log.chl, na.rm=TRUE))/(sd(log.chl, na.rm=TRUE)))
-
 model.datasp$lowtemp <- ((log.lowtemp -mean(log.lowtemp, na.rm=TRUE))/(sd(log.lowtemp, na.rm=TRUE)))
-
-model.datasp$var <- ((log.var-mean(log.var, na.rm=TRUE))/(sd(log.var, na.rm=TRUE)))
-
 model.datasp$avgtemp <- ((log.avgtemp-mean(log.avgtemp, na.rm=TRUE))/(sd(log.avgtemp, na.rm=TRUE)))
+model.datasp$hightemp <- ((log.hightemp-mean(log.hightemp, na.rm=TRUE))/(sd(log.hightemp, na.rm=TRUE)))
+model.datasp$var <- ((log.var-mean(log.var, na.rm=TRUE))/(sd(log.var, na.rm=TRUE)))
+model.datasp$turb <- ((log.turb-mean(log.turb, na.rm=TRUE))/(sd(log.turb, na.rm=TRUE)))
+model.datasp$PAR <- ((log.PAR-mean(log.PAR, na.rm=TRUE))/(sd(log.PAR, na.rm=TRUE)))
 
 
 ######################
