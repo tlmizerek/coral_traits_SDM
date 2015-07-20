@@ -1,0 +1,222 @@
+library ncdf
+nc <- open.ncdf( "salinity.nc" ) print(nc)
+library(ncdf)
+nc <- open.ncdf( "salinity.nc" ) print(nc)
+nc <- open.ncdf( "salinity.nc" )print(nc)
+nc <- open.ncdf( "salinity.nc" )
+nc <- open.ncdf( "cortadv3sst.nc" )
+dir
+ls
+open.ncdf( "cortadv3sst.nc" )
+install.packages("BIOMOD")
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org"
+)
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org")
+y
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org")
+install.packages("/Volumes/Maina/Documents/Maxent/BIOMOD/BIOMOD_1.1-7.02.tar.gz", type="source")
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org", ""BIOMOD_1.1-7.02.tar.gz", type="source"))
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org", ""BIOMOD_1.1-7.02.tar.gz", type="source")
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org")
+install.packages("/Volumes/Maina/Documents/Maxent/BIOMOD/BIOMOD_1.1-7.02.tar.gz", type="source")
+?install.packages
+install.packages("/Volumes/Maina/Documents/Maxent/BIOMOD/BIOMOD_1.1-7.02.tar.gz", type="mac.binary.leopard")
+install.packages("BIOMOD", repos="http://R-Forge.R-project.org", type="source")
+library(BIOMOD)#
+library(rgdal)
+library(BIOMOD)
+library(rgdal)
+install.packages("rgdal", repos="http://R-Forge.R-project.org", type="source")
+?rgdal
+install.packages("rgdal", repos="/Volumes/Maina/Documents/Maxent/BIOMOD/rgdal-0.7.8-2.zip", type="source")
+install.packages("rgdal", "/Volumes/Maina/Documents/Maxent/BIOMOD/rgdal-0.7.8-2.zip", type="source")
+?install.packages
+install.packages("rgdal", "/Volumes/Maina/Documents/Maxent/BIOMOD/rgdal-0.7.8-2.zip", "mac.binary.leopard")
+load BIOMOD and DISMO packages#
+library(BIOMOD)#
+library(raster)#
+library(rgdal)#
+library(dismo)#
+library(SDMTools)
+?Ensemble.Forecasting.raster
+Ensemble.Forecasting.raster(ANN = TRUE, CTA = TRUE, GAM = TRUE, GBM = TRUE, GLM = TRUE, MARS = TRUE,FDA = TRUE, RF = TRUE, SRE = TRUE,Proj.name="BIOMOD_SET1", weight.method='Roc',PCA.median=T, binary=F, bin.method='Roc', Test=T, decay=1.6, repetition.models=FALSE, final.model.out=FALSE, qual.th=0.3, compress=FALSE)
+load("/Volumes/Maina/Documents/Maxent/BIOMOD/Biomod_run.RData")
+ls()
+round(memory.limit()/2^20, 2)
+?memory.limit
+load("/Volumes/Maina/Documents/Maxent/BIOMOD/BIOMOD_SET1.RData")
+load("/Volumes/DATA/BIOMOD_RUN/M2R2/M2R2.RData")
+library(BIOMOD)#
+library(rgeos)#
+library(raster)#
+library(rgdal)#
+library(dismo)#
+library(SDMTools)
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M2R3/Biomod_run.RData")
+layers <- list.files(path="~/Documents/Maxent/BIOMOD/Data_tif/", pattern='tif', full.names=T )
+layers
+colnames(Expl.Var)
+layers=(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif")
+background=layers[[14]]
+layers
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", patern='tif', full.names=T)
+library(BIOMOD)#
+library(rgeos)#
+library(raster)#
+library(rgdal)#
+library(dismo)#
+library(SDMTools)
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", patern='tif', full.names=T)
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", pattern='tif', full.names=T)
+background=layers[[14]]
+background
+plot(background)
+plot(background$projection)
+background=raster(layers[[14]])
+plot(background)
+layers()
+layers
+ls()
+rm(list-ls())
+rm(list=ls())
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", patern='tif', full.names=T)
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", pattern='tif', full.names=T)
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M2R1/Biomod_run.RData")
+ls()
+colnames(Expl.Var)
+predictors <- stack(layers[c(42,38,46,21,26,48)])
+predictors
+mask<-raster(layers[[14]])
+pred_stack<-mask(predictors, mask)
+pred_stack1=stack(pred_stack)
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R2/Biomod_run.RData")
+colnames(Expl.Var)
+predictors <- stack(layers[c(42,38,44,21,26,48)])
+predictors <- stack(layers[c(42,38,40,21,26,48)])
+predictors <- stack(layers[c(42,38,44,21,26,48)])
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", pattern='tif', full.names=T)
+predictors <- stack(layers[c(42,38,40,21,26,48)])
+predictors
+colnames(Expl.Var)
+mask<-raster(layers[[14]])
+pred_stack<-mask(predictors, mask)
+pred_stack1=stack(pred_stack)
+Projection.raster(RasterProj = pred_stack1, Proj.name='M1R2', GLM=T, GAM=T, GBM=T, CTA=F, ANN=T, SRE=F, quant=0.025, FDA=T, MARS=T, RF=T, BinRoc=T, BinKappa=F, BinTSS=T, FiltRoc=F, FiltKappa=F, FiltTSS=F, repetition.model=F, stack.out=F, compress=F)
+predictors <- stack(layers[c(42,38,40,21,26,48)])
+pred_stack<-mask(predictors, mask)
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", pattern='tif', full.names=T)
+layers
+predictors <- stack(layers[c(42,38,40,21,26,48)])
+predictors
+pred_stack<-mask(predictors, mask)
+pred_stack1=stack(pred_stack)
+Projection.raster(RasterProj = pred_stack1, Proj.name='M1R2', GLM=T, GAM=T, GBM=T, CTA=F, ANN=T, SRE=F, quant=0.025, FDA=T, MARS=T, RF=T, BinRoc=T, BinKappa=F, BinTSS=T, FiltRoc=F, FiltKappa=F, FiltTSS=F, repetition.model=F, stack.out=F, compress=F)
+predstack
+pred_stack1
+colnames(Expl.Var)
+rm(list-ls())
+rm(list=ls())
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R2/Biomod_run.RData")
+colnames(Expl.Var)
+layers=list.files(path="/Volumes/Maina/Documents/Maxent/BIOMOD/Data_tif", pattern='tif', full.names=T)
+predictors <- stack(layers[c(42,38,40,21,26,48)])
+mask<-raster(layers[[14]])
+plot(raster(layers[[48]]))
+pred_stack<-mask(predictors, mask)
+pred_stack1=stack(pred_stack)
+Projection.raster(RasterProj = pred_stack1, Proj.name='M1R2', GLM=T, GAM=T, GBM=T, CTA=F, ANN=T, SRE=F, quant=0.025, FDA=T, MARS=T, RF=T, BinRoc=T, BinKappa=F, BinTSS=T, FiltRoc=F, FiltKappa=F, FiltTSS=F, repetition.model=F, stack.out=F, compress=F)
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R3/M1R3.RData")
+ls()
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R3/Biomod_run.RData")
+ls()
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R4/Biomod_run.RData")
+ls()
+rm(list=ls())
+load("/Volumes/Maina/Documents/Maxent/BIOMOD_RUN/M1R4/Biomod_run.RData")
+ls()
+layers <- list.files(path="~/Documents/Maxent/BIOMOD/Data_tif/", pattern='tif', full.names=T )
+predictors <- stack(layers[c(29,32,35,26,50)])
+layers
+predictors <- stack(layers[c(29,32,35,26,50)])
+layers <- list.files(path="~/Documents/Maxent/BIOMOD/Data_tif/", pattern='tif', full.names=T )
+layers
+predictors <- stack(layers[c(29,32,35,26,50)])
+rm(list=ls())
+getwd()
+rm(list=ls())
+setwd("/Volumes/Maina/Documents/SDM/Data_tif")
+layers<-(path="/Volumes/Maina/Documents/SDM/Data_tif", pattern='tif', full.names=T )
+layers <- list.files(path="~/Documents/SDM/Data_tif/", pattern='tif', full.names=T )
+layers
+predictors <- stack(layers[c(19,21,23,40,42,44,46,50,52,54,56,58,28,30)])
+predictors <- stack(layers[c(19,21,23,40,42,44,46,50,52,54,56,58,28)])
+predictors <- stack(layers[c(19,21,23,40)])
+predictors <- stack(layers[c(19)])
+library(BIOMOD)#
+library(rgeos)#
+library(raster)#
+library(rgdal)#
+library(dismo)#
+library(SDMTools)
+predictors <- stack(layers[c(19,21,23,40,42,44,46,50,52,54,56,58,28)])
+predictors
+mask<-raster(layers[[14]])
+pred_stack<-mask(predictors, mask)
+pred_stack1=stack(pred_stack)
+plot(pred_stack1)
+?prcomp
+princomp(pred_stack1, cor = FALSE, scores = TRUE, covmat = NULL)
+princomp(pred_stack1, cor = TRUE, scores = TRUE, covmat = NULL)
+princomp(pred_stack1, cor = TRUE, scores = TRUE)
+?write.raster
+?writeRaster
+pred_stack_1
+pred_stack1
+idr_kurt<-mask(19)
+idr_kurt<-mask(raster(layers[[14]]))
+idr_kurt<-mask(raster(layers[[19]]))
+idr_kurt<-mask(layers[19]))
+idr_kurt<-mask(layers[19])
+idr_kurt=(raster(layers[[19]]))
+idr_meanssta=(raster(layers[[21]]))
+idr_meantsa=(raster(layers[[23]]))
+idr_skewnes=(raster(layers[[40]]))
+idr_SST_2p=(raster(layers[[42]]))
+idr_SST_50p=(raster(layers[[44]]))
+idr_SST_98p=(raster(layers[[46]]))
+idr_sstafreq=(raster(layers[[50]]))
+idr_sstamax=(raster(layers[[52]]))
+idr_stdev=(raster(layers[[54]]))
+idr_tsafreq=(raster(layers[[56]]))
+idr_tsamax=(raster(layers[[58]]))
+idr_PAR_50P=(raster(layers[[28]]))
+idr_kurt_msk=mask(idr_kurt, mask)#
+idr_meanssta_msk=mask(idr_meanssta, mask)#
+idr_meantsa_msk=mask(idr_meantsa, mask)#
+idr_skewnes_msk=mask(idr_skewnes, mask)#
+idr_SST_2p_msk=mask(idr_SST_2p, mask)#
+idr_SST_50p_msk=mask(idr_SST_50p, mask)#
+idr_SST_98p_msk=mask(idr_SST_98p, mask)#
+idr_sstafreq_msk=mask(idr_sstafreq, mask)#
+idr_sstamax_msk=mask(idr_sstamax, mask)#
+idr_stdev_msk=mask(idr_stdev, mask)#
+idr_tsafreq_msk=mask(idr_tsafreq, mask)#
+idr_tsamax_msk=mask(idr_tsamax, mask)#
+idr_PAR_50P_msk=mask(idr_PAR_50P, mask)
+?writeRaster
+writeRaster(idr_kurt_msk, filename='idr_kurt_msk1.rst', format=".rst")
+writeFormats()
+writeRaster(idr_kurt_msk, filename='idr_kurt_msk1.rst', format="RST")
+writeRaster(idr_kurt_msk, filename='idr_kurt_msk.rst', format="RST") #
+writeRaster(idr_meanssta_msk, filename='idr_meanssta_msk.rst', format="RST")#
+writeRaster(idr_meantsa_msk, filename='idr_meantsa_msk.rst', format="RST")#
+writeRaster(idr_skewnes_msk, filename='idr_skewnes_msk.rst', format="RST")#
+writeRaster(idr_SST_2p_msk, filename='idr_SST_2p_msk.rst', format="RST") #
+writeRaster(idr_SST_50p_msk, filename='idr_SST_50p_msk.rst', format="RST") #
+writeRaster(idr_SST_98p_msk, filename='idr_SST_98p_msk.rst', format="RST")   #
+writeRaster(idr_sstafreq_msk, filename='idr_sstafreq_msk.rst', format="RST")   #
+writeRaster(idr_sstamax_msk, filename='idr_sstamax_msk.rst', format="RST")  #
+writeRaster(idr_stdev_msk, filename='idr_stdev_msk.rst', format="RST") #
+writeRaster(idr_tsafreq_msk, filename='idr_tsafreq_msk.rst', format="RST")#
+writeRaster(idr_tsamax_msk, filename='idr_tsamax_msk.rst', format="RST")#
+writeRaster(idr_PAR_50P_msk, filename='idr_PAR_50P_msk.rst', format="RST")

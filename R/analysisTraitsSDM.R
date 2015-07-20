@@ -7,6 +7,8 @@ library(ncdf4)
 source('R/functions.R')
 
 #traits
+#corallite size / PAR, larger coraliite=larger are of live tissue to capture light
+#maximum lower depth / PAR, species that can live deeper can survive with less light and therefore may also be where PAR is lower
 #corallite size / turbidity, sediment rejection increased with larger corallite size
 #growth form / wave power, robust growth forms are more resilient to wave energy
 #growth rate / wave power, if you grow fast, you can be more stable in high wave energy
@@ -28,12 +30,12 @@ traits$morphfam <- CTDB$family_morphology[match(rownames(traits), CTDB$specie_na
 traits$master_species <- rownames(traits) 
 
 
-veron <- read.csv("data/Veron20150603.csv", header=TRUE) #presence/absence
+veron <- read.csv("data/Veron20150603.csv", header=TRUE) #species presence/absence
 
+#make sure names match between data sets
 test<-veron$Revised.CTDB.name
 test2<-traits$master_species
 test[test %in% test2 == F] 
-
 
 
 traitsveron <- merge(x=veron, y=traits, by.x="Revised.CTDB.name", by.y="master_species")
@@ -70,18 +72,17 @@ library(sp)
 library(raster)
 layers <- list.files(path="data//Data_tif", pattern='tif$', full.names=TRUE)
 
-r<-raster(layers[143],crs= '+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
-r2<-raster(layers[152])
 
-r3<-projectRaster(r,r2)
 
 #####from Daisy
 #extract envt data from r&r3 and compare
+#r<-raster(layers[143],crs= '+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
+#r2<-raster(layers[152])
+#r3<-projectRaster(r,r2)
 
 
-
-layers1 <- layers[12:151]
-layers2 <- layers[-(12:151)]
+layers1 <- layers[44:48]
+layers2 <- layers[1:43] #PAR
 s1 <- stack(layers1)
 s2 <- stack(layers2)
 xy <- setNames(PAtraits[,3:2], c('lon', 'lat'))
@@ -107,7 +108,7 @@ ss <- cbind(xy, d1, d2)
 ## if only want a subset of years
 ss$winter_par_early <- rowMeans(ss[, grep('9._06_|9._07_|2000_06_|2000_07_|2001_06_|2001_07_|2002_06_|2002_07_', names(s1), val=TRUE)]) #5 year average
 
-ss<- ss[,c(1,2,143,160, 161, 166, 169,171)]
+ss<- ss[,c(1,2,3:7, 51)]
 #Sea surface temperature derived variables were obtained from the second version of the coral reef temperature anomaly database (CoRTAD). This database contains global SST and related thermal stress metrics at an approximately 4-km resolution weekly from 1982 through 2008, derived from measurements from the Advanced Very High Resolution Radiometer onboard NOAA suite of polar orbiting satellites.
 
 
